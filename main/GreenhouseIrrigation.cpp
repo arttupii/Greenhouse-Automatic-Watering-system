@@ -99,7 +99,8 @@ void GreenhouseIrrigation::run() {
 
 void GreenhouseIrrigation::startIrrigation() {
   if (maxLitersOfWater <= 0) {
-      Serial.println("Do not start water pump (maxLitersOfWater==0)");
+    Serial.println("Do not start water pump (maxLitersOfWater==0)");
+    waterPump(0);
     return;
   }
   Serial.println("Start water pump");
