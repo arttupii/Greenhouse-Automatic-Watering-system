@@ -8,15 +8,17 @@
 #define DHTTYPE           DHT11     // DHT 11 
 //#define DHTTYPE           DHT22     // DHT 22 (AM2302)
 //#define DHTTYPE           DHT21     // DHT 21 (AM2301)
-
+#define OTA
+#define OTA_PASSWORD "1231"
+#define OTA_HOSTNAME "GreenHouse"
 
 #define MAX_WATERPUMP_RUNNING_TIME 10000
 #define LITERS_PER_PULSE 450
 #define FLOW_SENSOR_PIN D1
 #define PUMP_PIN D0
-#define BLYNK_AUTH "xxxxxxxxxxxxxx"
-#define WIFI_SSID "xxxxxxxxxxxxxxxx"
-#define WIFI_PASS "xxxxxxxxxxxxxxxxxx"
+#define BLYNK_AUTH "xxxxxxxxxxxx"
+#define WIFI_SSID "xxxxxxxxxxxxxxx"
+#define WIFI_PASS "xxxxxxxxxxxxxxxxx"
 
 
 #define BLYNK_PUMP_SWITCH V0

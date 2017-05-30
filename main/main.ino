@@ -5,6 +5,12 @@
 #include "config.h"
 #include <DHT.h>
 
+#ifdef OTA
+#include <ESP8266mDNS.h>
+#include <WiFiUdp.h>
+#include <ArduinoOTA.h>
+#endif
+
 WidgetLCD lcd(BLYNK_LCD);
 
 #include "GreenhouseIrrigation.h"
@@ -36,15 +42,17 @@ class MessageBuffer {
         return;
       }
       memcpy(&buffer[bl], msg, ml);
+      newTexts = true;
     }
     void clear() {
       memset(buffer, 0, sizeof(buffer));
       sprintf(buffer, "%d-->", c);
       c++;
+      newTexts = false;
     }
     void run() {
       int bl = strlen(buffer);
-      if (bl > 0) {
+      if (bl > 0 && newTexts) {
         if (t + 20000 < millis()) {
           Blynk.tweet(buffer);
           clear();
@@ -56,6 +64,7 @@ class MessageBuffer {
     char buffer[140];
     unsigned long int t;
     int c;
+    bool newTexts;
 };
 
 MessageBuffer bf;
@@ -66,6 +75,7 @@ void updateInfo(const char*text) {
     lcd.print(0, 1, text);
 
     bf.add(text);
+    bf.add("\n");
     if (ghi.isErrors()) //LED 10 "HIGH"
       errorLed.on();
     else
@@ -94,6 +104,30 @@ void setup()
   Serial.printf("Pump sensor pin = %d\n", PUMP_PIN);
 
   dht.begin();
+#ifdef OTA
+  ArduinoOTA.onStart([]() {
+    Serial.println("Start");
+  });
+  ArduinoOTA.onEnd([]() {
+    Serial.println("\nEnd");
+  });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+  });
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("Error[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+    else if (error == OTA_END_ERROR) Serial.println("End Failed");
+  });
+  ArduinoOTA.setPassword((const char *)OTA_PASSWORD);
+  ArduinoOTA.setHostname(OTA_HOSTNAME);
+
+  ArduinoOTA.begin();
+
+#endif
 }
 
 BLYNK_CONNECTED() {
@@ -199,7 +233,9 @@ void loop()
   lcdUpdate();
   bf.run();
   updateTempAndHum();
-
+#ifdef OTA
+  ArduinoOTA.handle();
+#endif
 }
 
 
